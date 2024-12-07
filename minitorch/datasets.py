@@ -5,6 +5,18 @@ from typing import List, Tuple
 
 
 def make_pts(N: int) -> List[Tuple[float, float]]:
+    """Generates a list of random points in a 2D space.
+
+    Args:
+    ----
+        N (int): The total number of points to generate.
+
+    Returns:
+    -------
+        List[Tuple[float, float]]: A list of tuples, where each tuple contains
+        the x_1 and x_2 coordinates of a point in 2D space.
+
+    """
     X = []
     for i in range(N):
         x_1 = random.random()
@@ -21,6 +33,15 @@ class Graph:
 
 
 def simple(N: int) -> Graph:
+    """Args:
+    ----
+        N (int): The total number of points to generate in the graph.
+
+    Returns
+    -------
+        Graph: A Graph object containing the generated points and their labels.
+
+    """
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -30,6 +51,17 @@ def simple(N: int) -> Graph:
 
 
 def diag(N: int) -> Graph:
+    """Generates a diagonal graph with a decision boundary.
+
+    Args:
+    ----
+        N (int): The total number of points to generate in the graph.
+
+    Returns:
+    -------
+        Graph: A Graph object containing the generated points and their labels.
+
+    """
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -39,6 +71,17 @@ def diag(N: int) -> Graph:
 
 
 def split(N: int) -> Graph:
+    """Generates a graph with split decision boundaries.
+
+    Args:
+    ----
+        N (int): The total number of points to generate in the graph.
+
+    Returns:
+    -------
+        Graph: A Graph object containing the generated points and their labels.
+
+    """
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -48,6 +91,17 @@ def split(N: int) -> Graph:
 
 
 def xor(N: int) -> Graph:
+    """Generates an XOR graph with non-linear decision boundaries.
+
+    Args:
+    ----
+        N (int): The total number of points to generate in the graph.
+
+    Returns:
+    -------
+        Graph: A Graph object containing the generated points and their labels.
+
+    """
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -57,6 +111,17 @@ def xor(N: int) -> Graph:
 
 
 def circle(N: int) -> Graph:
+    """Generates a circular graph with a specified number of points.
+
+    Args:
+    ----
+        N (int): The total number of points to generate in the circle.
+
+    Returns:
+    -------
+        Graph: A Graph object containing the generated points and their labels.
+
+    """
     X = make_pts(N)
     y = []
     for x_1, x_2 in X:
@@ -67,6 +132,19 @@ def circle(N: int) -> Graph:
 
 
 def spiral(N: int) -> Graph:
+    """Generates a spiral graph with a specified number of points.
+
+    Args:
+    ----
+        N (int): The total number of points to generate in the spiral.
+                  It should be an even integer to ensure proper pairing of points.
+
+    Returns:
+    -------
+        Graph: A Graph object containing the generated points and their labels.
+
+    """
+
     def x(t: float) -> float:
         return t * math.cos(t) / 20.0
 
