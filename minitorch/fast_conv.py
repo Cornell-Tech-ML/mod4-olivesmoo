@@ -241,7 +241,31 @@ def _tensor_conv2d(
     s20, s21, s22, s23 = s2[0], s2[1], s2[2], s2[3]
 
     # TODO: Implement for Task 4.2.
-    raise NotImplementedError("Need to implement for Task 4.2")
+    for b in prange(batch): # loop thru batches
+        for oc in prange(out_channels): # loop thru out channels
+            for oh in prange(out_shape[2]):
+                for ow in prange(out_shape[3]): # loop thru out width
+                    acc = 0.0
+                    ih = 0.0
+                    iw = 0.0
+                    for ic in range(in_channels):
+                        for wh in range(kh):
+                            for ww in range(kw):
+                                if reverse:
+                                    ih = oh - kh + wh + 1
+                                    iw = ow - kw + ww + 1
+                                else:
+                                    ih = oh + wh
+                                    iw = ow + ww
+                                if iw < 0 or iw >= width or ih < 0 or ih >= height:
+                                    acc += 0.0
+                                else:
+                                    in_pos = b * s10 + ic * s11 + ih * s12 + iw * s13
+                                    weight_pos = oc * s20 + ic * s21 + wh * s22 + ww * s23
+                                    acc += input[in_pos] * weight[weight_pos]
+
+                    out_pos = b * out_strides[0] + oc * out_strides[1] + oh * out_strides[2] + ow * out_strides[3]
+                    out[out_pos] = acc
 
 
 tensor_conv2d = njit(_tensor_conv2d, parallel=True, fastmath=True)
