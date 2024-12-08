@@ -1,3 +1,4 @@
+from tkinter import W
 from typing import Tuple, TypeVar, Any
 
 import numpy as np
@@ -91,7 +92,27 @@ def _tensor_conv1d(
     s2 = weight_strides
 
     # TODO: Implement for Task 4.1.
-    raise NotImplementedError("Need to implement for Task 4.1")
+    for b in prange(batch): # loop thru batches
+        for oc in prange(out_channels): # loop thru out channels
+            for ow in prange(out_width): # loop thru out width
+                #initial input width = out width
+                acc = 0.0
+                iw = 0.0
+                for ic in range(in_channels):
+                    for w in range(kw):
+                        if reverse:
+                            iw = ow - kw + w + 1
+                        else:
+                            iw = ow + w
+                        if iw < 0 or iw >= width:
+                            acc += 0.0
+                        else:   
+                            in_pos = b * input_strides[0] + ic * input_strides[1] + iw * input_strides[2]
+                            weight_pos = oc * weight_strides[0] + ic * weight_strides[1] + w * weight_strides[2]
+                            acc += input[in_pos] * weight[weight_pos]
+                out_pos = b * out_strides[0] + oc * out_strides[1] + ow * out_strides[2]
+                out[out_pos] = acc
+    
 
 
 tensor_conv1d = njit(_tensor_conv1d, parallel=True)
