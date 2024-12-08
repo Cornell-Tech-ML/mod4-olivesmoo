@@ -15,6 +15,18 @@ class SGD(Optimizer):
         self.lr = lr
 
     def zero_grad(self) -> None:
+        """Reset gradients of all parameters to zero.
+
+        Attributes
+        ----------
+            parameters: A list of model parameters that may have associated
+            gradients and derivatives.
+
+        Returns
+        -------
+            None
+
+        """
         for p in self.parameters:
             if p.value is None:
                 continue
@@ -26,6 +38,18 @@ class SGD(Optimizer):
                     p.value.grad = None
 
     def step(self) -> None:
+        """Update model parameters based on gradients.
+
+        Attributes
+        ----------
+            parameters: A list of model parameters that may have associated gradients
+            or derivatives. Each parameter is updated based on its gradient or derivative.
+
+        Returns
+        -------
+            None
+
+        """
         for p in self.parameters:
             if p.value is None:
                 continue
