@@ -71,9 +71,10 @@ class CNNSentimentKim(minitorch.Module):
             Conv1d(embedding_size, feature_map_size, kernel_size)
             for kernel_size in filter_sizes
         ]
+        self.conv1 = Conv1d(embedding_size, feature_map_size, filter_sizes[0])
+        self.conv2 = Conv1d(embedding_size, feature_map_size, filter_sizes[1])
+        self.conv3 = Conv1d(embedding_size, feature_map_size, filter_sizes[2])
         self.linear = Linear(feature_map_size, 1)
-        self.conv = Conv1d(embedding_size, feature_map_size, filter_sizes[0])
-
         # raise NotImplementedError("Need to implement for Task 4.5")
 
     def forward(self, embeddings):
@@ -82,15 +83,23 @@ class CNNSentimentKim(minitorch.Module):
         """
         # TODO: Implement for Task 4.5.
         embeddings = embeddings.permute(0, 2, 1)
-        conv_outputs = [self.conv.forward(embeddings).relu() for conv in self.convs]
-        pooled_outputs = [maxpool2d(output.view(output.shape[0], output.shape[1], 1, output.shape[2]), (1, 52)) for output in conv_outputs]
+        h1 = self.conv1.forward(embeddings).relu()
+        h2 = self.conv2.forward(embeddings).relu()
+        h3 = self.conv3.forward(embeddings).relu()
 
-        combined = sum(pooled_outputs)
-        h = combined.view(combined.shape[0], combined.shape[1])
+        pool1 = minitorch.max(h1, 2)
+        pool2 = minitorch.max(h2, 2)
+        pool3 = minitorch.max(h3, 2)
+        combined = pool1 + pool2 + pool3
+        h = combined.view(combined.size // self.feature_map_size, self.feature_map_size)
+
+        # conv_outputs = [conv.forward(embeddings).relu() for conv in self.convs]
+        # pooled_outputs = [maxpool2d(output.view(output.shape[0], output.shape[1], output.shape[2], 1), (52, 1)) for output in conv_outputs]
+        # combined = sum(pooled_outputs)
+        # h = combined.view(combined.shape[0], combined.shape[1])
         h = self.linear.forward(h)
         h = minitorch.dropout(h, 0.25, ignore=not self.training).sigmoid()
-        return h
-        # raise NotImplementedError("Need to implement for Task 4.5")
+        return h.view(h.shape[0])
 
 
 # Evaluation helper methods
