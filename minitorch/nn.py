@@ -1,11 +1,8 @@
 from typing import Optional, Tuple
 
-from . import operators
 from .autodiff import Context
-from .fast_ops import FastOps
 from .tensor import Tensor
-from .tensor_functions import Function, rand, tensor, zeros
-import random
+from .tensor_functions import Function, rand
 
 
 # List of functions in this file:
@@ -45,7 +42,9 @@ def tile(input: Tensor, kernel: Tuple[int, int]) -> Tuple[Tensor, int, int]:
     reshaped = input.view(batch, channel, new_height, kh, new_width, kw)
     permuted = reshaped.permute(0, 1, 2, 4, 3, 5)
 
-    unfolded = permuted.contiguous().view(batch, channel, new_height, new_width, kh * kw)
+    unfolded = permuted.contiguous().view(
+        batch, channel, new_height, new_width, kh * kw
+    )
 
     return unfolded, new_height, new_width
 
@@ -61,6 +60,7 @@ def avgpool2d(input: Tensor, kernel: Tuple[int, int]) -> Tensor:
 
     return pooled
 
+
 def maxpool2d(input: Tensor, kernel: Tuple[int, int]) -> Tensor:
     batch, channel, height, width = input.shape
 
@@ -71,6 +71,7 @@ def maxpool2d(input: Tensor, kernel: Tuple[int, int]) -> Tensor:
 
     return pooled
 
+
 def softmax(input: Tensor, dim: int) -> Tensor:
     exp_tensor = input.exp()
     sum_exp = exp_tensor.sum(dim)
@@ -79,13 +80,15 @@ def softmax(input: Tensor, dim: int) -> Tensor:
 
     return softmax_output
 
+
 def logsoftmax(input: Tensor, dim: int) -> Tensor:
     max_val = max(input, dim)
     exp_input = (input - max_val).exp()
     sum_exp = exp_input.sum(dim=dim)
-    log_sum_exp = sum_exp.log() 
-    
+    log_sum_exp = sum_exp.log()
+
     return input - log_sum_exp - max_val
+
 
 def dropout(input: Tensor, p: float, ignore: bool = False):
     if ignore:
@@ -125,4 +128,3 @@ def max(input: Tensor, dim: Optional[int] = None) -> Tensor:
         return Max.apply(input.contiguous().view(input.size), input._ensure_tensor(0))
     else:
         return Max.apply(input, input._ensure_tensor(dim))
-

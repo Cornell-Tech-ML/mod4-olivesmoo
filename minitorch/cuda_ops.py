@@ -1,7 +1,6 @@
 # type: ignore
 # Currently pyright doesn't support numba.cuda
 
-from operator import index
 from typing import Callable, Optional, TypeVar, Any
 
 import numba
@@ -346,7 +345,7 @@ def _sum_practice(out: Storage, a: Storage, size: int) -> None:
 
     if i < size:
         for j in [1, 2, 4, 8, 16]:
-            if pos % (j*2) == 0:
+            if pos % (j * 2) == 0:
                 cache[pos] += cache[pos + j]
                 cuda.syncthreads()
         if pos == 0:
@@ -446,7 +445,7 @@ def tensor_reduce(
                 x = 0
                 while 2**x < BLOCK_DIM:
                     j = 2**x
-                    if pos % (j*2) == 0:
+                    if pos % (j * 2) == 0:
                         cache[pos] = fn(cache[pos], cache[pos + j])
                         cuda.syncthreads()
                     x += 1
@@ -519,7 +518,7 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
 
     if i >= size or j >= size:
         return
-    
+
     a_shared[i, j] = a[size * i + j]
     b_shared[i, j] = b[size * i + j]
     cuda.syncthreads()
@@ -529,7 +528,6 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
         accum += a_shared[i, k] * b_shared[k, j]
 
     out[size * i + j] = accum
-
 
     # a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
     # b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
@@ -662,9 +660,6 @@ def _tensor_matrix_multiply(
                 accum += a_shared[pi, k] * b_shared[k, pj]
     if i < out_shape[1] and j < out_shape[2]:
         out[out_strides[0] * batch + out_strides[1] * i + out_strides[2] * j] = accum
-
-
-
 
     # acc = 0  # accumulate partial sum for each out position
     # size = a_shape[-1]  # inner dimension, should equal b_shape[-2]

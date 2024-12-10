@@ -5,6 +5,8 @@ import embeddings
 import minitorch
 from datasets import load_dataset
 
+from minitorch.nn import maxpool2d
+
 BACKEND = minitorch.TensorBackend(minitorch.FastOps)
 
 
@@ -34,8 +36,11 @@ class Conv1d(minitorch.Module):
         self.bias = RParam(1, out_channels, 1)
 
     def forward(self, input):
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        # TODO: Implement for Task 4.5
+        conv_output = minitorch.conv1d(input, self.weights.value)
+        output = conv_output + self.bias.value
+        return output
+        # raise NotImplementedError("Need to implement for Task 4.5")
 
 
 class CNNSentimentKim(minitorch.Module):
@@ -48,7 +53,7 @@ class CNNSentimentKim(minitorch.Module):
         feature_map_size=100 output channels and [3, 4, 5]-sized kernels
         followed by a non-linear activation function (the paper uses tanh, we apply a ReLu)
     2. Apply max-over-time across each feature map
-    3. Apply a Linear to size C (number of classes) followed by a ReLU and Dropout with rate 25%
+    3. Apply a Linear to size C (number of classes) followed by Dropout with rate 25%
     4. Apply a sigmoid over the class dimension.
     """
 
@@ -62,14 +67,30 @@ class CNNSentimentKim(minitorch.Module):
         super().__init__()
         self.feature_map_size = feature_map_size
         # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        self.convs = [
+            Conv1d(embedding_size, feature_map_size, kernel_size)
+            for kernel_size in filter_sizes
+        ]
+        self.linear = Linear(feature_map_size, 1)
+        self.conv = Conv1d(embedding_size, feature_map_size, filter_sizes[0])
+
+        # raise NotImplementedError("Need to implement for Task 4.5")
 
     def forward(self, embeddings):
         """
         embeddings tensor: [batch x sentence length x embedding dim]
         """
         # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        embeddings = embeddings.permute(0, 2, 1)
+        conv_outputs = [self.conv.forward(embeddings).relu() for conv in self.convs]
+        pooled_outputs = [maxpool2d(output.view(output.shape[0], output.shape[1], 1, output.shape[2]), (1, 52)) for output in conv_outputs]
+
+        combined = sum(pooled_outputs)
+        h = combined.view(combined.shape[0], combined.shape[1])
+        h = self.linear.forward(h)
+        h = minitorch.dropout(h, 0.25, ignore=not self.training).sigmoid()
+        return h
+        # raise NotImplementedError("Need to implement for Task 4.5")
 
 
 # Evaluation helper methods

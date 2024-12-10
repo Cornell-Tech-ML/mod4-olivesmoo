@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, TypeVar
 import numpy as np
 from numba import prange
 from numba import njit as _njit
-from sympy import primerange
 
 from .tensor_data import (
     MAX_DIMS,
@@ -182,7 +181,7 @@ def tensor_map(
         in_strides: Strides,
     ) -> None:
         # TODO: Implement for Task 3.1.
-        if(
+        if (
             len(out_strides) != len(in_strides)
             or (out_strides != in_strides).any()
             or (out_shape != in_shape).any()
@@ -213,7 +212,6 @@ def tensor_map(
         #         o = index_to_position(out_indices[i], out_strides)
         #         j = index_to_position(in_indices[i], in_strides)
         #         out[o] = fn(in_storage[j])
-
 
     return njit(_map, parallel=True)  # type: ignore
 
