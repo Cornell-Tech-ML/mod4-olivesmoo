@@ -1,10 +1,11 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from . import operators
 from .autodiff import Context
 from .fast_ops import FastOps
 from .tensor import Tensor
 from .tensor_functions import Function, rand, tensor, zeros
+import random
 
 
 # List of functions in this file:
@@ -59,3 +60,69 @@ def avgpool2d(input: Tensor, kernel: Tuple[int, int]) -> Tensor:
     pooled = pooled.view(batch, channel, new_height, new_width)
 
     return pooled
+
+def maxpool2d(input: Tensor, kernel: Tuple[int, int]) -> Tensor:
+    batch, channel, height, width = input.shape
+
+    unfolded, new_height, new_width = tile(input, kernel)
+
+    pooled = max(unfolded, dim=4)
+    pooled = pooled.view(batch, channel, new_height, new_width)
+
+    return pooled
+
+def softmax(input: Tensor, dim: int) -> Tensor:
+    exp_tensor = input.exp()
+    sum_exp = exp_tensor.sum(dim)
+
+    softmax_output = exp_tensor / sum_exp
+
+    return softmax_output
+
+def logsoftmax(input: Tensor, dim: int) -> Tensor:
+    max_val = max(input, dim)
+    exp_input = (input - max_val).exp()
+    sum_exp = exp_input.sum(dim=dim)
+    log_sum_exp = sum_exp.log() 
+    
+    return input - log_sum_exp - max_val
+
+def dropout(input: Tensor, p: float, ignore: bool = False):
+    if ignore:
+        return input
+    mask = rand(input.shape)
+    mask = mask > p
+    return input * mask
+
+
+def argmax(input: Tensor, dim: int) -> Tensor:
+    """Compute the argmax as a 1-hot tensor."""
+    shape = input.shape
+    size = input.size
+    max_tensor = input.f.max_reduce(input, dim)
+    # one_hot_tensor = zeros(input.shape)
+    # for i in range(input.shape[dim]):
+    #     mask = input.f.select(dim, i) == max_tensor
+    return input == max_tensor
+
+
+class Max(Function):
+    @staticmethod
+    def forward(ctx: Context, a: Tensor, dim: Tensor) -> Tensor:
+        ctx.save_for_backward(a, dim)
+        return a.f.max_reduce(a, int(dim.item()))
+
+    @staticmethod
+    def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
+        """Compute the gradients."""
+        (a, dim) = ctx.saved_values
+        # print("a", a, "dim", dim)
+        return argmax(a, int(dim.item())) * grad_output, 0.0
+
+
+def max(input: Tensor, dim: Optional[int] = None) -> Tensor:
+    if dim is None:
+        return Max.apply(input.contiguous().view(input.size), input._ensure_tensor(0))
+    else:
+        return Max.apply(input, input._ensure_tensor(dim))
+
