@@ -19,6 +19,18 @@ Fn = TypeVar("Fn")
 
 
 def njit(fn: Fn, **kwargs: Any) -> Fn:
+    """A wrapper around the `_njit` function to create a no-python JIT-compiled version of a function.
+
+    Args:
+    ----
+        fn (Fn): The function to be JIT-compiled.
+        **kwargs (Any): Additional keyword arguments to pass to the `_njit` function.
+
+    Returns:
+    -------
+        Fn: The compiled version of the input function.
+
+    """
     return _njit(inline="always", **kwargs)(fn)  # type: ignore
 
 
@@ -84,8 +96,8 @@ def _tensor_conv1d(
         and in_channels == in_channels_
         and out_channels == out_channels_
     )
-    s1 = input_strides
-    s2 = weight_strides
+    # s1 = input_strides
+    # s2 = weight_strides
 
     # TODO: Implement for Task 4.1.
     for b in prange(batch):  # loop thru batches
@@ -151,6 +163,25 @@ class Conv1dFun(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
+        """Computes the gradients of the loss with respect to the input and weight
+        tensors during the backward pass of a 1D convolution operation.
+
+        Args:
+        ----
+            ctx (Context): The context object storing information from the forward pass
+                (e.g., `saved_values`) for use during backpropagation.
+            grad_output (Tensor): The gradient of the loss with respect to the output
+                tensor from the forward pass.
+
+        Returns:
+        -------
+            Tuple[Tensor, Tensor]:
+                - grad_input (Tensor): The gradient of the loss with respect to the
+                input tensor.
+                - grad_weight (Tensor): The gradient of the loss with respect to the
+                weight tensor.
+
+        """
         input, weight = ctx.saved_values
         batch, in_channels, w = input.shape
         out_channels, in_channels, kw = weight.shape
@@ -309,6 +340,25 @@ class Conv2dFun(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
+        """Computes the gradients of the loss with respect to the input and weight
+        tensors during the backward pass of a 2D convolution operation.
+
+        Args:
+        ----
+            ctx (Context): The context object storing information from the forward pass
+                (e.g., `saved_values`) for use during backpropagation.
+            grad_output (Tensor): The gradient of the loss with respect to the output
+                tensor from the forward pass.
+
+        Returns:
+        -------
+            Tuple[Tensor, Tensor]:
+                - grad_input (Tensor): The gradient of the loss with respect to the
+                input tensor.
+                - grad_weight (Tensor): The gradient of the loss with respect to the
+                weight tensor.
+
+        """
         input, weight = ctx.saved_values
         batch, in_channels, h, w = input.shape
         out_channels, in_channels, kh, kw = weight.shape
