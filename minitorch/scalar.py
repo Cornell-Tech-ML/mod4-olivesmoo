@@ -112,21 +112,56 @@ class Scalar:
         return self.history is not None and self.history.last_fn is None
 
     def is_constant(self) -> bool:
+        """Checks if the current scalar is a constant.
+
+        Returns
+        -------
+        bool: `True` if the current scalar is a constant,
+        `False` otherwise.
+
+        """
         return self.history is None
 
     @property
     def parents(self) -> Iterable[Variable]:
-        """Get the variables used to create this one."""
+        """Retrieves the parent variables of the current scalar.
+
+        Returns
+        -------
+        Iterable[Variable]: An iterable collection of the parent
+        variables associated with the current scalar.
+
+        """
         assert self.history is not None
         return self.history.inputs
 
     def chain_rule(self, d_output: Any) -> Iterable[Tuple[Variable, Any]]:
+        """Computes the chain rule for backpropagation.
+
+        This method calculates the derivatives of the inputs to the last
+        function in the scalar's computation history using the chain rule.
+        It retrieves the necessary context and derivatives from the history
+        and pairs each input variable with its corresponding derivative.
+
+        Args:
+        ----
+        d_output (Any): The gradient of the output with respect to
+        the loss, which will be propagated back through the
+        computation graph.
+
+        Returns:
+        -------
+        Iterable[Tuple[Variable, Any]]: A list of tuples, each containing
+        a variable and its corresponding derivative.
+
+        """
         h = self.history
         assert h is not None
         assert h.last_fn is not None
         assert h.ctx is not None
 
-        raise NotImplementedError("Need to include this file from past assignment.")
+        derivatives = h.last_fn._backward(ctx=h.ctx, d_out=d_output)
+        return list(zip(h.inputs, derivatives))
 
     def backward(self, d_output: Optional[float] = None) -> None:
         """Calls autodiff to fill in the derivatives for the history of this object.
@@ -141,7 +176,145 @@ class Scalar:
             d_output = 1.0
         backpropagate(self, d_output)
 
-    raise NotImplementedError("Need to include this file from past assignment.")
+    def __lt__(self, b: ScalarLike) -> Scalar:
+        """Compares if the current scalar is less than another scalar.
+
+        Args:
+        ----
+        b (ScalarLike): The scalar to compare against.
+
+        Returns:
+        -------
+        Scalar: A new `Scalar` object representing the result of the comparison.
+
+        """
+        return LT.apply(self, b)
+
+    def __gt__(self, b: ScalarLike) -> Scalar:
+        """Compares if the current scalar is greater than another scalar.
+
+        Args:
+        ----
+        b (ScalarLike): The scalar to compare against.
+
+        Returns:
+        -------
+        Scalar: A new `Scalar` object representing the result of the comparison.
+
+        """
+        return LT.apply(b, self)
+
+    def __eq__(self, b: ScalarLike) -> Scalar:
+        """Compares if the current scalar is equal to another scalar.
+
+        Args:
+        ----
+        b (ScalarLike): The scalar to compare against.
+
+        Returns:
+        -------
+        Scalar: A new `Scalar` object representing the result of the comparison.
+
+        """
+        return EQ.apply(b, self)
+
+    def __sub__(self, b: ScalarLike) -> Scalar:
+        """Computes the difference between the current scalar and another scalar.
+
+        Args:
+        ----
+        b (ScalarLike): The scalar to subtract from the current scalar.
+
+        Returns:
+        -------
+        Scalar: A new `Scalar` object representing the result of the subtraction.
+
+        """
+        return Add.apply(self, Neg.apply(b))
+
+    def __neg__(self) -> Scalar:
+        """Computes the negation of the current scalar.
+
+        Returns
+        -------
+        Scalar: A new `Scalar` object representing the negation of the current scalar.
+
+        """
+        return Neg.apply(self)
+
+    def __add__(self, b: ScalarLike) -> Scalar:
+        """Computes the sum of the current scalar and another scalar.
+
+        Args:
+        ----
+        b (ScalarLike): The scalar to add to the current scalar.
+
+        Returns:
+        -------
+        Scalar: A new `Scalar` object representing the result of the addition.
+
+        """
+        return Add.apply(self, b)
+
+    def log(self) -> Scalar:
+        """Applies the natural logarithm function.
+
+        This method computes the natural logarithm of the current scalar,
+        which is defined as:
+        Log(x) = ln(x)
+
+        Returns
+        -------
+        Scalar: A new `Scalar` object representing the result
+        of applying the natural logarithm function to the current scalar.
+
+        """
+        return Log.apply(self)
+
+    def exp(self) -> Scalar:
+        """Applies the exponential function.
+
+        This method computes the exponential of the current scalar,
+        which is defined as:
+        Exp(x) = e^x
+
+        Returns
+        -------
+        Scalar: A new `Scalar` object representing the result
+        of applying the exponential function to the current scalar.
+
+        """
+        return Exp.apply(self)
+
+    def sigmoid(self) -> Scalar:
+        """Applies the Sigmoid function.
+
+        This method computes the sigmoid for the current scalar,
+        which is defined as:
+            Sigmoid(x) = 1 / (1 + exp(-x))
+
+        Returns
+        -------
+            Scalar: A new `Scalar` object representing the result
+            of applying the Sigmoid function to the current scalar.
+
+        """
+        return Sigmoid.apply(self)
+
+    def relu(self) -> Scalar:
+        """Applies the Rectified Linear Unit (ReLU) function.
+
+        This method computes the ReLU for the current scalar,
+        which is defined as:
+        ReLU(x) = max(0, x)
+
+        Returns
+        -------
+        minitorch.scalar.Scalar: A new `Scalar` object representing the result
+        of applying the ReLU function to the current scalar.
+
+        """
+        return ReLU.apply(self)
 
 
 def derivative_check(f: Any, *scalars: Scalar) -> None:
@@ -150,8 +323,10 @@ def derivative_check(f: Any, *scalars: Scalar) -> None:
 
     Parameters
     ----------
-        f : function from n-scalars to 1-scalar.
-        *scalars  : n input scalar values.
+    f : Callable
+        A function that takes `n` scalar inputs and returns a single `Scalar` output.
+    *scalars : Scalar
+        A variable number of scalar inputs to be passed into the function `f`.
 
     """
     out = f(*scalars)
@@ -162,7 +337,7 @@ Derivative check at arguments f(%s) and received derivative f'=%f for argument %
 but was expecting derivative f'=%f from central difference."""
     for i, x in enumerate(scalars):
         check = central_difference(f, *scalars, arg=i)
-        print(str([x.data for x in scalars]), x.derivative, i, check)
+        print(str([x.data for x in scalars]), x.unique_id, x.derivative, i, check)
         assert x.derivative is not None
         np.testing.assert_allclose(
             x.derivative,
