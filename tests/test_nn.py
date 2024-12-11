@@ -32,18 +32,16 @@ def test_avg(t: Tensor) -> None:
 @given(tensors(shape=(2, 3, 4)))
 def test_max(t: Tensor) -> None:
     # TODO: Implement for Task 4.4.
-    all_zero = True
     out = minitorch.max(t)
     flat_t = t.contiguous().view(t.size)
     maxval = flat_t[0]
     for i in range(flat_t.size):
         if flat_t[i] > maxval:
             maxval = flat_t[i]
-        if flat_t[i] != 0:
-            all_zero = False
     assert_close(out[0], maxval)
-    if not all_zero:
-        minitorch.grad_check(lambda t: minitorch.max(t), t)
+
+    t = t + minitorch.rand(t.shape)
+    minitorch.grad_check(lambda t: minitorch.max(t), t)
 
 
 @pytest.mark.task4_4
