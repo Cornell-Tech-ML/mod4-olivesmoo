@@ -80,19 +80,13 @@ class Network(minitorch.Module):
 
     def forward(self, x):
         # TODO: Implement for Task 4.5.
-        # print("x", x.shape)
         self.mid = self.conv1.forward(x).relu()
-        # print("mid", self.mid.shape)
         self.out = self.conv2.forward(self.mid).relu()
-        # print("out", self.out.shape)
         h = minitorch.maxpool2d(self.out, (4, 4)).view(x.shape[0], 392)
-        # print("pooled", h.shape)
         h = self.lin1(h).relu()
         h = minitorch.dropout(h, 0.25, ignore=not self.training)
         h = self.lin2(h)
-        # print("linear", h.shape)
         h = minitorch.logsoftmax(h, 1)
-        # print("logsoftmax", h.shape)
         return h
 
 
