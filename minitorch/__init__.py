@@ -1,3 +1,9 @@
+"""minitorch: A lightweight framework for building and testing deep learning models.
+
+This package includes modules for tensor operations, autodiff, optimization, and
+neural network layers, supporting both CPU and GPU backends.
+"""
+
 from .testing import MathTest, MathTestVariable  # type: ignore # noqa: F401,F403
 from .datasets import *  # noqa: F401,F403
 from .optim import *  # noqa: F401,F403
