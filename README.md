@@ -40,6 +40,7 @@ Sentiment File: [setiment.txt](sentiment.txt)
 Mnist File: [mnist.txt](mnist.txt)
 
 ### Sentiment File
+```
 Epoch 1, loss 31.50080005701227, train accuracy: 52.00%
 Validation accuracy: 51.00%
 Best Valid accuracy: 51.00%
@@ -139,9 +140,11 @@ Best Valid accuracy: 74.00%
 Epoch 33, loss 16.513487974338574, train accuracy: 84.22%
 Validation accuracy: 72.00%
 Best Valid accuracy: 74.00%
+```
 
 
 ### Mnist File
+```
 Epoch 1 loss 2.3050309232098076 valid acc 3/16
 Epoch 1 loss 11.494543499205353 valid acc 3/16
 Epoch 1 loss 11.487555447808647 valid acc 3/16
@@ -2032,3 +2035,4 @@ Epoch 30 loss 0.32414947015961704 valid acc 16/16
 Epoch 30 loss 0.26087025374776285 valid acc 16/16
 Epoch 30 loss 0.22728108919353224 valid acc 16/16
 Epoch 30 loss 0.6775815168429752 valid acc 16/16
+```
